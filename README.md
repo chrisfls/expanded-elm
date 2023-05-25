@@ -90,7 +90,7 @@ and incorporate it into your tooling.
 ### elm(inputs, output, options)
 
 ```ts
-elm(inputs: string[], output: string, options: Options): Promise<Deno.ProcessStatus>`
+elm(inputs: string[], output: string, options?: Options): Promise<Deno.ProcessStatus>`
 ```
 
 Compiles the input files and performs additional postprocessing.
@@ -134,7 +134,7 @@ find-and-replace rules applied to the compiled code.
 ### xelm(inputs, output, options)
 
 ```ts
-xelm(inputs: string[], output: string, options: ExtraOptions): Promise<Deno.ProcessStatus>
+xelm(inputs: string[], output: string, options?: ExtraOptions): Promise<Deno.ProcessStatus>
 ```
 
 Retrieve transformations from the project and dependency `README.md` files
