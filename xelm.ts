@@ -3,7 +3,6 @@ import { cyan as colorize } from "https://deno.land/std@0.188.0/fmt/colors.ts";
 import { parse } from "https://deno.land/std@0.188.0/flags/mod.ts";
 import * as fs from "https://deno.land/std@0.188.0/fs/mod.ts";
 import * as path from "https://deno.land/std@0.188.0/path/mod.ts";
-import { Liquid } from "https://esm.sh/liquidjs@10.7.1";
 import { marked } from "https://esm.sh/marked@5.0.2";
 import { minify, MinifyOptions } from "https://esm.sh/terser@5.17.6";
 import { transform as optimize } from "https://esm.sh/elm-optimize-level-2@0.3.5/dist/index.js?deps=typescript@4.7.4";
@@ -238,7 +237,7 @@ async function postprocess(src: string, dest: string, config: PostConfig) {
   let content = await Deno.readTextFile(src);
 
   if (config.transformations.length > 0) {
-    content = await transform(content, config);
+    content = transform(content, config);
   }
 
   if (config.deno) {
@@ -258,19 +257,13 @@ async function postprocess(src: string, dest: string, config: PostConfig) {
   await Deno.writeTextFile(dest, content);
 }
 
-async function transform(content: string, config: PostConfig) {
-  const engine = new Liquid();
+function transform(content: string, config: PostConfig) {
   const map: { [find: string]: string } = {};
   const patterns: string[] = [];
-  const vars = { debug: config.debug, test: config.test };
 
   for (const { find, replace } of config.transformations) {
     const fmt = spacesToTabs(find.trim());
-
-    map[fmt] = spacesToTabs(
-      await engine.render(engine.parse(replace), vars),
-    );
-
+    map[fmt] = spacesToTabs(replace);
     patterns.push(escapeStringRegexp(fmt));
   }
 
