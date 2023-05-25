@@ -1,13 +1,13 @@
-# 🌌 extended-elm
+# 🌌 expanded-elm
 
 A wrapper for the [Elm](https://elm-lang.org/) language
-[compiler](https://github.com/elm/compiler) that extends it with:
+[compiler](https://github.com/elm/compiler) that expands it with:
 - 🦕 [Deno](https://deno.land/) support
 - 🏎️ [elm-optimize-level-2](https://github.com/mdgriffith/elm-optimize-level-2) 
 optimizations
 - 🗜️ [terser](https://terser.org/)
 - 🧪 find-and-replace rules for
-[dangerous experiments](https://discourseg.elm-lang.org/t/native-code-in-0-19/826)
+[dangerous experiments](https://discourse.elm-lang.org/t/native-code-in-0-19/826)
 
 ## Usage
 
@@ -19,15 +19,15 @@ deno run -A xelm.ts make [INPUT_FILES] [OPTIONS] --output=[OUTPUT_FILE].js
 
 ### Build
 
-> **Warning**: This is currently not possible due to an issue with
-> [elm-optimize-level-2](https://github.com/mdgriffith/elm-optimize-level-2)
+> **⚠️ Warning**: Binaries built with `deno compile` do not support the
+> `--optimize=2` and `--optimize=3` flags.
 
 You can also build a binary by using
 [deno compile](https://deno.com/manual@v1.33.4/tools/compiler):
 
 ```bash
-git clone https://github.com/kress95/extended-elm.git
-cd extended-elm
+git clone https://github.com/kress95/expanded-elm.git
+cd expanded-elm
 deno compile --output xelm -A xelm.ts
 ```
 
@@ -173,7 +173,8 @@ is found.
 
 ### Example
 
-This library requires [post-processing](#98f5c378-5809-4e35-904e-d1c5c3a8154e):
+This section could be included in the `README.md` file of a library that
+requires [post-processing](#98f5c378-5809-4e35-904e-d1c5c3a8154e):
 
 #### where:
 

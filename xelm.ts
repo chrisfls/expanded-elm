@@ -485,7 +485,7 @@ async function help(flags: Flags) {
   const l = console.log.bind(console);
   const h = (s: string) => console.log(colorize(s));
 
-  l("Extended flags:");
+  l("Expanded flags:");
   l("");
   h("    --optimize=0");
   l("        Disable all optimizations.");
