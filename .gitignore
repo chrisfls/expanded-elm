@@ -1,6 +1,6 @@
 .direnv
 .env
 .vscode
-elm-extra
-elm-extra.exe
+xelm
+xelm.exe
 elm-stuff
