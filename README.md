@@ -19,6 +19,9 @@ deno run -A xelm.ts make [INPUT_FILES] [OPTIONS] --output=[OUTPUT_FILE].js
 
 ### Build
 
+> **Warning**: This is currently not possible due to an issue with
+> [elm-optimize-level-2](https://github.com/mdgriffith/elm-optimize-level-2)
+
 You can also build a binary by using
 [deno compile](https://deno.com/manual@v1.33.4/tools/compiler):
 
@@ -90,7 +93,7 @@ and incorporate it into your tooling.
 ### elm(inputs, output, options)
 
 ```ts
-elm(inputs: string[], output: string, options?: Options): Promise<Deno.ProcessStatus>`
+elm(inputs: string[], output: string, options?: Options): Promise<Deno.CommandStatus>`
 ```
 
 Compiles the input files and performs additional postprocessing.
@@ -134,7 +137,7 @@ find-and-replace rules applied to the compiled code.
 ### xelm(inputs, output, options)
 
 ```ts
-xelm(inputs: string[], output: string, options?: ExtraOptions): Promise<Deno.ProcessStatus>
+xelm(inputs: string[], output: string, options?: ExtraOptions): Promise<Deno.CommandStatus>
 ```
 
 Retrieve transformations from the project and dependency `README.md` files
