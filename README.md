@@ -53,6 +53,11 @@ The options available for `xelm make` include:
 - `--elm-home=<elm-home>`: Use a custom directory for `ELM_HOME`, which is
   `~/.elm` by default.
 - `--deno`: Enable a patch for running Elm in Deno.
+  > **Warning**: The generated code still pollutes `globalThis.Elm`, and if
+  > you intend to use certain libraries like
+  > [elm/http](https://package.elm-lang.org/packages/elm/http/latest/Http),
+  > you will need to utilize
+  > [polyfills](https://github.com/apple502j/xhr-shim).
 - `--debug`: Turn on the time-travelling debugger.
 - `--transform`: Enable loading find-and-replace transformations from
   `README.md` files.
