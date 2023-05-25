@@ -93,7 +93,7 @@ and incorporate it into your tooling.
 ### elm(inputs, output, options)
 
 ```ts
-elm(inputs: string[], output: string, options?: Options): Promise<Deno.CommandStatus>`
+elm(inputs: string[], output: string, options?: Options): Promise<Deno.CommandStatus>
 ```
 
 Compiles the input files and performs additional postprocessing.
