@@ -1,5 +1,6 @@
 .direnv
 .env
+.vscode
 elm-extra
 elm-extra.exe
 elm-stuff
