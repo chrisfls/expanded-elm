@@ -75,7 +75,10 @@ export async function elm(inputs: string[], output: string, options?: Options) {
 
   const out = needsTempFile ? `${await Deno.makeTempFile()}.js` : output;
 
-  if (config.elmHome !== ELM_HOME) console.log(`export HOME=${config.elmHome}`);
+  if (config.elmHome !== DEFAULT_ELM_HOME) {
+    console.log(`export ELM_HOME=${config.elmHome}`);
+  }
+
   if (config.projectRoot !== Deno.cwd()) console.log("cd", config.projectRoot);
 
   const args = [
