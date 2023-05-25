@@ -2,12 +2,12 @@
 
 A wrapper for the [Elm](https://elm-lang.org/) language
 [compiler](https://github.com/elm/compiler) that extends it with:
-- 🦕 A patch to run built code in [Deno](https://deno.land/)
+- 🦕 [Deno](https://deno.land/) support
 - 🏎️ [elm-optimize-level-2](https://github.com/mdgriffith/elm-optimize-level-2) 
 optimizations
 - 🗜️ [terser](https://terser.org/)
-- 🧪 Find-and-replace rules for restoring the
-[dangerous native code feature](https://discourse.elm-lang.org/t/native-code-in-0-19/826)
+- 🧪 find-and-replace rules for
+[dangerous experiments](https://discourse.elm-lang.org/t/native-code-in-0-19/826)
 
 ## Usage
 
