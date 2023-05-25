@@ -5,7 +5,8 @@ import * as fs from "https://deno.land/std@0.188.0/fs/mod.ts";
 import * as path from "https://deno.land/std@0.188.0/path/mod.ts";
 import { marked } from "https://esm.sh/marked@5.0.2";
 import { minify, MinifyOptions } from "https://esm.sh/terser@5.17.6";
-import { transform as optimize } from "https://esm.sh/elm-optimize-level-2@0.3.5/dist/index.js?deps=typescript@4.7.4";
+import "npm:typescript@4.7.4";
+import { transform as optimize } from "npm:elm-optimize-level-2@0.3.5";
 import escapeStringRegexp from "https://esm.sh/escape-string-regexp@5.0.0";
 
 /** Compiler options. */
