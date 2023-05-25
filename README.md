@@ -7,7 +7,7 @@ A wrapper for the [Elm](https://elm-lang.org/) language
 optimizations
 - 🗜️ [terser](https://terser.org/)
 - 🧪 find-and-replace rules for
-[dangerous experiments](https://discourse.elm-lang.org/t/native-code-in-0-19/826)
+[dangerous experiments](https://discourseg.elm-lang.org/t/native-code-in-0-19/826)
 
 ## Usage
 
@@ -40,17 +40,18 @@ values.
 In addition, you can also run the other commands from Elm, such as `repl`,
 `init`, `reactor`, `install`, `bump`, `diff`, and `publish`, directly within
 `xelm`. These commands are simply forwarded, so there's no reason not to invoke
-them directly through Elm.
+them directly through `elm`.
 
 ### Options
 
 The options available for `xelm make` include:
 
-- `--project`: Path to the root directory of the project. Defaults to the
-  current working directory.
-- `--compiler`: The path to the Elm binary, which is `elm` by default.
-- `--elm-home`: Use a custom directory for `ELM_HOME`, which is `~/.elm` by
+- `--project=<project-root>`: Path to the root directory of the project.
+  Defaults to the current working directory.
+- `--compiler=<elm-binary>`: The path to the Elm binary, which is `elm` by
   default.
+- `--elm-home=<elm-home>`: Use a custom directory for `ELM_HOME`, which is
+  `~/.elm` by default.
 - `--deno`: Enable a patch for running Elm in Deno.
 - `--debug`: Turn on the time-travelling debugger.
 - `--transform`: Enable loading find-and-replace transformations from
@@ -62,8 +63,9 @@ The options available for `xelm make` include:
   - `3` Same as running `elm-optimize-level-2 --optimize-speed`.
 - `--minify`: Minify the output with terser, loading configuration from
   `terser.config.json` if available.
-- `--report`: Get error messages as JSON.
-- `--docs`: Generate a JSON file with the documentation.
+- `--report=<report-type>`: You can say `--report=json` to get error messages
+  as JSON. 
+- `--docs=<json-file>`: Generate a JSON file with the documentation.
 - `--test`: Load transformations from test dependencies.
 
 ### Example
@@ -110,7 +112,7 @@ The `options` field provides various compiler options for the API.
 | `transformations` | List of find-and-replace transformations to apply.             |
 | `optimize`        | Tune the optimization level.                                   |
 | `minify`          | Minify the output with terser.                                 |
-| `report`          | Get error messages as JSON.                                    |
+| `report`          | Change how error messages are reported.                        |
 | `docs`            | Generate a JSON file with the documentation.                   |
 | `test`            | Load transformations from test dependencies.                   |
 

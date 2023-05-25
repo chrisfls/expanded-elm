@@ -26,11 +26,11 @@ export interface Options {
   optimize?: boolean | 0 | 1 | 2 | 3;
   /** Minify the output with terser. */
   minify?: boolean | MinifyOptions;
-  /** Get error messages as JSON. This is only useful when running
+  /** Change how error messages are reported. This is only useful when running
   from the command-line interface as the provided functions do not capture the
   outputs.
    */
-  report?: "json";
+  report?: string;
   /** Generate a JSON file with the documentation. */
   docs?: string;
   /** Load transformations from test dependencies. */
@@ -195,7 +195,7 @@ async function cli(args: string[]) {
     minify: parsed.minify
       ? (await getMinifyOptions(parsed.project) ?? parsed.minify)
       : parsed.minify,
-    report: parsed.report as undefined | "json",
+    report: parsed.report,
     docs: parsed.docs,
     test: parsed.test,
     refresh: parsed.refresh,
