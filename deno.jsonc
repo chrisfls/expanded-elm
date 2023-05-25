@@ -1,5 +1,5 @@
 {
   "tasks": {
-    "build": "deno compile --output xelm -A xelm.ts"
+    "build": "deno compile --unstable --output xelm -A xelm.ts"
   }
 }

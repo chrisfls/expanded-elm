@@ -115,7 +115,7 @@ export async function xelm(
   inputs: string[],
   output: string,
   options?: ExtraOptions,
-): Promise<Deno.ProcessStatus> {
+) {
   const projectRoot = options?.projectRoot ?? Deno.cwd();
   const elmHome = options?.elmHome ?? DEFAULT_ELM_HOME;
 
@@ -217,11 +217,11 @@ interface Flags {
 }
 
 async function run(args: string[], flags?: Flags) {
-  return await Deno.run({
+  return await new Deno.Command(flags?.elmPath ?? "elm", {
+    args: [...args],
     cwd: flags?.projectRoot,
     env: flags?.elmHome ? { ELM_HOME: flags?.elmHome } : undefined,
-    cmd: [flags?.elmPath ?? "elm", ...args],
-  }).status();
+  }).spawn().status;
 }
 
 interface PostConfig {

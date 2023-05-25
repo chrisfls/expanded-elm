@@ -1,3 +1,5 @@
 { pkgs ? import <nixpkgs> { } }:
-with pkgs;
-mkShell { buildInputs = with pkgs; [ deno elmPackages.elm ]; }
+let
+  unstable = import <nixpkgs-unstable> {};
+in
+pkgs.mkShell { buildInputs = with pkgs; [ unstable.deno elmPackages.elm ]; }
