@@ -48,12 +48,12 @@ The options available for `xelm make` include:
 
 - `--project`: Path to the root directory of the project. Defaults to the
   current working directory.
-- `--compiler`: The path to your Elm binary, which is `elm` by default.
+- `--compiler`: The path to the Elm binary, which is `elm` by default.
 - `--elm-home`: Use a custom directory for `ELM_HOME`, which is `~/.elm` by
   default.
 - `--deno`: Enable a patch for running Elm in Deno.
 - `--debug`: Turn on the time-travelling debugger.
-- `--transform`: Enable loading source-to-source transformations from
+- `--transform`: Enable loading find-and-replace transformations from
   `README.md` files.
 - `--optimize=`: Tune the optimization level.
   - `0` Disable all optimizations, same as omitting the flag.
@@ -62,9 +62,7 @@ The options available for `xelm make` include:
   - `3` Same as running `elm-optimize-level-2 --optimize-speed`.
 - `--minify`: Minify the output with terser, loading configuration from
   `terser.config.json` if available.
-- `--report`: Get error messages as JSON. This is only useful when running
-  from the command-line interface as the provided functions do not capture the
-  outputs.
+- `--report`: Get error messages as JSON.
 - `--docs`: Generate a JSON file with the documentation.
 - `--test`: Load transformations from test dependencies.
 
@@ -105,11 +103,11 @@ The `options` field provides various compiler options for the API.
 | Field             | Description                                                    |
 | ----------------- | -------------------------------------------------------------- |
 | `projectRoot`     | Path to the root directory of the project.                     |
-| `elmPath`         | The path to your Elm binary.                                   |
+| `elmPath`         | The path to the Elm binary.                                    |
 | `elmHome`         | Custom directory for `ELM_HOME`, which is `~/.elm` by default. |
 | `deno`            | Enable a patch for running Elm in Deno.                        |
 | `debug`           | Turn on the time-traveling debugger.                           |
-| `transformations` | List of source-to-source transformations to apply.             |
+| `transformations` | List of find-and-replace transformations to apply.             |
 | `optimize`        | Tune the optimization level.                                   |
 | `minify`          | Minify the output with terser.                                 |
 | `report`          | Get error messages as JSON.                                    |
@@ -118,8 +116,8 @@ The `options` field provides various compiler options for the API.
 
 #### transformations
 
-The `transformations` field of the options object are simple find-and-replace
-rules applied to the compiled code.
+The `transformations` field of the options object is an array of simple
+find-and-replace rules applied to the compiled code.
 
 | Field    | Description      |
 | -------- | ---------------- |
