@@ -330,9 +330,8 @@ function preprocess(content: string, config: PostConfig) {
 }
 
 function modularize(content: string) {
-  return `const scope = {};\n${
-    content.replace(/\(this\)\)\;$/g, "(scope));")
-  }\n export default scope.Elm;`;
+  const str = content.replace(/\(this\)\)\;$/g, "(scope));");
+  return `const scope = {};\n${str}\nexport default scope.Elm;\n`;
 }
 
 async function typescript(dest: string, runtime: "deno" | "node") {
