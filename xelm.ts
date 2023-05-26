@@ -17,8 +17,10 @@ export interface Options {
   elmPath?: string;
   /** Custom directory for ELM_HOME, which is `~/.elm` by default. */
   elmHome?: string;
-  /** Enable a patch for running Elm in Deno. */
-  deno?: boolean;
+  /** Build an ECMAScript module. */
+  module?: boolean;
+  /** Generate a TypeScript bindings, implies `module`. */
+  typescript?: "node" | "deno";
   /** Turn on the time-travelling debugger. */
   debug?: boolean;
   /** List of find-and-replace transformations to apply. */
@@ -58,7 +60,8 @@ export async function elm(inputs: string[], output: string, options?: Options) {
     elmHome: options?.elmHome ?? DEFAULT_ELM_HOME,
     elmPath: options?.elmPath ?? "elm",
     projectRoot: options?.projectRoot ?? Deno.cwd(),
-    deno: options?.deno ?? false,
+    module: options?.typescript ? true : (options?.module ?? false),
+    typescript: options?.typescript ?? "deno",
     debug: options?.debug ?? false,
     transformations: options?.transformations ?? [],
     optimize: +(options?.optimize ?? 0) as 0 | 1 | 2 | 3,
@@ -68,7 +71,7 @@ export async function elm(inputs: string[], output: string, options?: Options) {
     test: options?.test ?? false,
   };
 
-  const needsTempFile = config.deno ||
+  const needsTempFile = config.module ||
     config.transformations.length > 0 ||
     config.optimize > 1 ||
     config.minify;
@@ -170,7 +173,7 @@ async function cli(args: string[]) {
     boolean: [
       "help",
       "debug",
-      "deno",
+      "module",
       "minify",
       "transform",
       "test",
@@ -188,12 +191,16 @@ async function cli(args: string[]) {
 
   assertOutput(parsed.output);
   assertOptimize(parsed.optimize);
+  assertTypescript(parsed.typescript);
 
   const inputs = parsed._.map((input) => input.toString());
 
   const options: ExtraOptions = {
     ...flags,
-    deno: parsed.deno,
+    module: parsed.typescript ? true : parsed.module,
+    typescript: typeof parsed?.typescript === "boolean"
+      ? (parsed?.typescript ? "deno" : undefined)
+      : (parsed?.typescript ?? undefined),
     debug: parsed.debug,
     optimize: parsed.optimize,
     minify: parsed.minify
@@ -229,7 +236,8 @@ async function run(args: string[], flags?: Flags) {
 }
 
 interface PostConfig {
-  deno: boolean;
+  module: boolean;
+  typescript: "deno" | "node";
   debug: boolean;
   test: boolean;
   transformations: Transform[];
@@ -244,8 +252,9 @@ async function postprocess(src: string, dest: string, config: PostConfig) {
     content = transform(content, config);
   }
 
-  if (config.deno) {
-    content = deno(content);
+  if (config.module) {
+    content = modularize(content);
+    if (config.typescript) typescript(dest, config.typescript);
   }
 
   if (config.optimize > 1) {
@@ -267,7 +276,7 @@ function transform(content: string, config: PostConfig) {
 
   for (const { find, replace } of config.transformations) {
     const fmt = spacesToTabs(find.trim());
-    map[fmt] = spacesToTabs(replace);
+    map[fmt] = preprocess(spacesToTabs(replace), config);
     patterns.push(escapeStringRegexp(fmt));
   }
 
@@ -288,10 +297,72 @@ function spacesToTabs(find: string) {
   return find;
 }
 
-function deno(content: string) {
-  return content.replace(/\(this\)\)\;$/g, "(globalThis));");
+function preprocess(content: string, config: PostConfig) {
+  const lines: string[] = [];
+
+  const check = ["debug", "test", "module"] as const;
+
+  type Flags = typeof check[number];
+  const stack: Flags[] = [];
+
+  lines:
+  for (const line of content.split("\n")) {
+    const [comment, cond, flag] = line.trim().split(/\s+/);
+
+    if (comment === "//") {
+      if (cond === "@IF" && check.includes(flag as Flags)) {
+        stack.push(flag as Flags);
+        continue lines;
+      } else if (cond === "@FI") {
+        stack.pop();
+        continue lines;
+      }
+    }
+
+    for (const flag of stack) if (!config[flag]) continue lines;
+
+    lines.push(
+      stack.length === 0 ? line : line.replace("\t".repeat(stack.length), ""),
+    );
+  }
+
+  return lines.join("\n");
 }
 
+function modularize(content: string) {
+  return `const scope = {};\n${
+    content.replace(/\(this\)\)\;$/g, "(scope));")
+  }\n export default scope.Elm;`;
+}
+
+async function typescript(dest: string, runtime: "deno" | "node") {
+  const name = path.join(dest.slice(0, -path.extname(dest).length))
+  const deno = runtime === "deno";
+  await Deno.writeTextFile(
+    `${name}.ts`,
+    `/// <reference lib="dom" />
+import elm from "./${name}${deno ? ".js" : ""}";
+interface Module {
+  [module: Capitalize<string>]: Module | undefined;
+  init?: (options?: { node?: Node; flags?: unknown }) => {
+    ports: {
+      [port: string]:
+        | { send(value: unknown): void }
+        | {
+          subscribe(listener: (value: unknown) => void): void;
+          unsubscribe(listener: (value: unknown) => void): void;
+        }
+        | undefined;
+    };
+  };
+}
+interface Elm {
+  [module: Capitalize<string>]: Module | undefined;
+}
+export default elm as Elm;
+`,
+  );
+}
 // EXTRACT
 
 async function extractWithCache(
@@ -512,8 +583,13 @@ async function help(flags: Flags) {
     l(`        [env: ELM_HOME=${Deno.env.get("ELM_HOME")}]`);
   }
   l("");
-  h("    --deno");
-  l("        Enable a patch for running Elm in Deno.");
+  h("    --module");
+  l("        Build an ECMAScript module.");
+  l("");
+  h("    --typescript=<runtime>");
+  l("        Generate TypeScript bindings for the given runtime. For example,");
+  l("        --typescript=node generates bindings for Node.js. Defaults to deno and");
+  l("        implies --module.");
   l("");
   h("    --minify");
   l(`       Minify the output with terser, loading configuration from`);
@@ -542,6 +618,15 @@ function assertOptimize(
   if (optimize === undefined || typeof optimize === "boolean") return;
   if (typeof optimize === "number" && (optimize < 0 || optimize > 3)) {
     exit(`Invalid optimization level ${optimize}`);
+  }
+}
+
+function assertTypescript(
+  typescript: unknown,
+): asserts typescript is Options["typescript"] {
+  if (typescript === undefined || typeof typescript === "boolean") return;
+  if (typescript !== "deno" && typescript !== "node") {
+    exit(`Invalid TypeScript format ${typescript}`);
   }
 }
 

@@ -2,7 +2,7 @@
 
 A wrapper for the [Elm](https://elm-lang.org/) language
 [compiler](https://github.com/elm/compiler) that expands it with:
-- 🦕 [Deno](https://deno.land/) support
+- 🦕 [Deno](https://deno.land/) and [Node.js](https://nodejs.org/) support
 - 🏎️ [elm-optimize-level-2](https://github.com/mdgriffith/elm-optimize-level-2) 
 optimizations
 - 🗜️ [terser](https://terser.org/)
@@ -55,12 +55,13 @@ The options available for `xelm make` include:
   default.
 - `--elm-home=<elm-home>`: Use a custom directory for `ELM_HOME`, which is
   `~/.elm` by default.
-- `--deno`: Enable a patch for running Elm in Deno.
-  > **Warning**: The generated code still pollutes `globalThis.Elm`, and if
-  > you intend to use certain libraries like
+- `--module`: Build an ECMAScript module.
+  > **Warning**: If you intend to use certain libraries like
   > [elm/http](https://package.elm-lang.org/packages/elm/http/latest/Http),
-  > you will need to utilize
-  > [polyfills](https://github.com/apple502j/xhr-shim).
+  > you will need to utilize [polyfills](https://github.com/apple502j/xhr-shim).
+- `--typescript=<runtime>`: Generate TypeScript bindings for the given runtime.
+  For example, `--typescript=node` generates bindings for node. Defaults to
+  `deno`, implies `--module`.
 - `--debug`: Turn on the time-travelling debugger.
 - `--transform`: Enable loading find-and-replace transformations from
   `README.md` files.
@@ -115,7 +116,8 @@ The `options` field provides various compiler options for the API.
 | `projectRoot`     | Path to the root directory of the project.                     |
 | `elmPath`         | The path to the Elm binary.                                    |
 | `elmHome`         | Custom directory for `ELM_HOME`, which is `~/.elm` by default. |
-| `deno`            | Enable a patch for running Elm in Deno.                        |
+| `module`          | Build an ECMAScript module.                                    |
+| `typescript`      | Generate TypeScript bindings for the given runtime.            |
 | `debug`           | Turn on the time-traveling debugger.                           |
 | `transformations` | List of find-and-replace transformations to apply.             |
 | `optimize`        | Tune the optimization level.                                   |
