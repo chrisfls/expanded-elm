@@ -55,13 +55,13 @@ The options available for `xelm make` include:
   default.
 - `--elm-home=<elm-home>`: Use a custom directory for `ELM_HOME`, which is
   `~/.elm` by default.
-- `--module`: Build an ECMAScript module.
+- `--output=<module-name>.mjs`: Build an ECMAScript module.
   > **Warning**: If you intend to use certain libraries like
   > [elm/http](https://package.elm-lang.org/packages/elm/http/latest/Http),
   > you will need to utilize [polyfills](https://github.com/apple502j/xhr-shim).
 - `--typescript=<runtime>`: Generate TypeScript bindings for the given runtime.
   For example, `--typescript=node` generates bindings for node. Defaults to
-  `deno`, implies `--module`.
+  `deno` and requires a `.mjs` output.
 - `--debug`: Turn on the time-travelling debugger.
 - `--transform`: Enable loading find-and-replace transformations from
   `README.md` files.
@@ -116,7 +116,6 @@ The `options` field provides various compiler options for the API.
 | `projectRoot`     | Path to the root directory of the project.                     |
 | `elmPath`         | The path to the Elm binary.                                    |
 | `elmHome`         | Custom directory for `ELM_HOME`, which is `~/.elm` by default. |
-| `module`          | Build an ECMAScript module.                                    |
 | `typescript`      | Generate TypeScript bindings for the given runtime.            |
 | `debug`           | Turn on the time-traveling debugger.                           |
 | `transformations` | List of find-and-replace transformations to apply.             |

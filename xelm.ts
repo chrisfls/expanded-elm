@@ -7,7 +7,6 @@ import { marked } from "https://esm.sh/marked@5.0.2";
 import { minify, MinifyOptions } from "https://esm.sh/terser@5.17.6";
 import "npm:typescript@4.7.4";
 import { transform as optimize } from "npm:elm-optimize-level-2@0.3.5";
-import escapeStringRegexp from "https://esm.sh/escape-string-regexp@5.0.0";
 
 /** Compiler options. */
 export interface Options {
@@ -17,8 +16,6 @@ export interface Options {
   elmPath?: string;
   /** Custom directory for ELM_HOME, which is `~/.elm` by default. */
   elmHome?: string;
-  /** Build an ECMAScript module. */
-  module?: boolean;
   /** Generate a TypeScript bindings, implies `module`. */
   typescript?: "node" | "deno";
   /** Turn on the time-travelling debugger. */
@@ -60,8 +57,8 @@ export async function elm(inputs: string[], output: string, options?: Options) {
     elmHome: options?.elmHome ?? DEFAULT_ELM_HOME,
     elmPath: options?.elmPath ?? "elm",
     projectRoot: options?.projectRoot ?? Deno.cwd(),
-    module: options?.typescript ? true : (options?.module ?? false),
-    typescript: options?.typescript ?? "deno",
+    module: path.extname(output) === ".mjs",
+    typescript: options?.typescript,
     debug: options?.debug ?? false,
     transformations: options?.transformations ?? [],
     optimize: +(options?.optimize ?? 0) as 0 | 1 | 2 | 3,
@@ -70,6 +67,12 @@ export async function elm(inputs: string[], output: string, options?: Options) {
     docs: options?.docs,
     test: options?.test ?? false,
   };
+
+  if (!config.module && config.typescript) {
+    exit(
+      "Generating TypeScript bindings require building an ECMAScript module.",
+    );
+  }
 
   const needsTempFile = config.module ||
     config.transformations.length > 0 ||
@@ -173,7 +176,6 @@ async function cli(args: string[]) {
     boolean: [
       "help",
       "debug",
-      "module",
       "minify",
       "transform",
       "test",
@@ -197,7 +199,6 @@ async function cli(args: string[]) {
 
   const options: ExtraOptions = {
     ...flags,
-    module: parsed.typescript ? true : parsed.module,
     typescript: typeof parsed?.typescript === "boolean"
       ? (parsed?.typescript ? "deno" : undefined)
       : (parsed?.typescript ?? undefined),
@@ -237,7 +238,7 @@ async function run(args: string[], flags?: Flags) {
 
 interface PostConfig {
   module: boolean;
-  typescript: "deno" | "node";
+  typescript?: "deno" | "node";
   debug: boolean;
   test: boolean;
   transformations: Transform[];
@@ -275,9 +276,10 @@ function transform(content: string, config: PostConfig) {
   const patterns: string[] = [];
 
   for (const { find, replace } of config.transformations) {
-    const fmt = spacesToTabs(find.trim());
+    const fmt = spacesToTabs(find);
     map[fmt] = preprocess(spacesToTabs(replace), config);
-    patterns.push(escapeStringRegexp(fmt));
+    const txt = fmt.replace(/[.*+?^${}()|[\]\\\/]/g, "\\$&");
+    patterns.push(txt);
   }
 
   const regexp = new RegExp(`(${patterns.join("|")})`, "gm");
@@ -285,16 +287,8 @@ function transform(content: string, config: PostConfig) {
   return content.replaceAll(regexp, (substring) => map[substring] ?? substring);
 }
 
-function spacesToTabs(find: string) {
-  const regexp = /^\s{2}/gm;
-
-  while (true) {
-    const value = find.replace(regexp, "\t");
-    if (value === find) break;
-    find = value;
-  }
-
-  return find;
+function spacesToTabs(content: string, spaces = "  ") {
+  return content.replace(/^\s+/gm, (match) => match.replaceAll(spaces, "\t"));
 }
 
 function preprocess(content: string, config: PostConfig) {
@@ -330,19 +324,23 @@ function preprocess(content: string, config: PostConfig) {
 }
 
 function modularize(content: string) {
-  const str = content.replace(/\(this\)\)\;$/g, "(scope));");
-  return `const scope = {};\n${str}\nexport default scope.Elm;\n`;
+  const pre = "(function(scope){\n'use strict';".length;
+  const pos = "(this));".length;
+  return `const scope = {};\n(function(scope){` +
+    content.slice(pre, content.length - pos) +
+    `(scope));\nexport default scope.Elm;`;
 }
 
 async function typescript(dest: string, runtime: "deno" | "node") {
-  const name = path.join(dest.slice(0, -path.extname(dest).length))
+  const name = path.join(dest.slice(0, -path.extname(dest).length));
   const deno = runtime === "deno";
+  const prefix = name.at(0) === "/" ? "" : "./";
   await Deno.writeTextFile(
     `${name}.ts`,
     `/// <reference lib="dom" />
-import elm from "./${name}${deno ? ".js" : ""}";
-interface Module {
-  [module: Capitalize<string>]: Module | undefined;
+import elm from "${prefix}${name}${deno ? ".mjs" : ""}";
+interface Elm {
+  [module: Capitalize<string>]: Elm | undefined;
   init?: (options?: { node?: Node; flags?: unknown }) => {
     ports: {
       [port: string]:
@@ -355,13 +353,11 @@ interface Module {
     };
   };
 }
-interface Elm {
-  [module: Capitalize<string>]: Module | undefined;
-}
-export default elm as Elm;
+export const Elm: { [module: Capitalize<string>]: Elm | undefined } = elm;
 `,
   );
 }
+
 // EXTRACT
 
 async function extractWithCache(
@@ -496,10 +492,10 @@ async function extractReadme(filePath: string) {
     if (collect && token.type === "code") {
       if (token.lang !== "js") exit(`Unexpected '${token.lang}' code block`);
       if (find !== undefined) {
-        transforms.push({ find, replace: token.text });
+        transforms.push({ find, replace: spacesToTabs(token.text, "    ") });
         find = undefined;
       } else {
-        find = token.text;
+        find = spacesToTabs(token.text, "    ");
       }
     }
   }
@@ -557,6 +553,10 @@ async function help(flags: Flags) {
 
   l("Expanded flags:");
   l("");
+  h("    --output=<output-file>");
+  l("        Expanded to build ECMAScript modules. For example");
+  l("        --output=assets/elm.mjs to generate the module at assets/elm.mjs");
+  l("");
   h("    --optimize=0");
   l("        Disable all optimizations.");
   l("");
@@ -582,13 +582,10 @@ async function help(flags: Flags) {
     l(`        [env: ELM_HOME=${Deno.env.get("ELM_HOME")}]`);
   }
   l("");
-  h("    --module");
-  l("        Build an ECMAScript module.");
-  l("");
   h("    --typescript=<runtime>");
   l("        Generate TypeScript bindings for the given runtime. For example,");
   l("        --typescript=node generates bindings for Node.js. Defaults to deno and");
-  l("        implies --module.");
+  l("        requires a `.mjs` output.");
   l("");
   h("    --minify");
   l(`       Minify the output with terser, loading configuration from`);
@@ -608,7 +605,9 @@ function assertOutput(
   output: unknown,
 ): asserts output is string {
   if (typeof output !== "string") exit("No output file");
-  if (path.extname(output) !== ".js") exit("Output must be JavaScript");
+  if (![".js", ".mjs"].includes(path.extname(output))) {
+    exit("Output must be JavaScript or ECMAScript module");
+  }
 }
 
 function assertOptimize(
