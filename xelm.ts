@@ -33,7 +33,7 @@ export interface Options {
   report?: string;
   /** Generate a JSON file with the documentation. */
   docs?: string;
-  /** Load transformations from test dependencies. */
+  /** Enable test mode. Can be used with `elm-test-rs` with the `--compiler` flag. */
   test?: boolean;
   /** Controls how `stdout` and `stderr` of the compiler should be handled.
    * Defaults to "inherit". Set to "piped" to access the output programmatically.
@@ -171,6 +171,8 @@ export class ElmError extends Error {
 }
 
 // CLI
+
+// TODO: document these
 
 export async function cli(args: string[]) {
   if (args[0] !== "make") return await run(args);
@@ -398,9 +400,11 @@ async function extractWithCache(
   test: boolean,
   refresh: boolean,
 ): Promise<Transform[]> {
-  const transformationsFile = test
-    ? path.join(projectRoot, ELM_STUFF, "transformations.test.json")
-    : path.join(projectRoot, ELM_STUFF, "transformations.json");
+  const transformationsFile = path.join(
+    projectRoot,
+    ELM_STUFF,
+    "transformations.json",
+  );
 
   const changed = refresh
     ? refresh
@@ -421,11 +425,20 @@ async function extractWithCache(
 }
 
 async function extract(projectRoot: string, elmHome: string, test: boolean) {
-  const readmeFile = path.join(projectRoot, README_MD);
-  const transformations = await extractReadme(readmeFile);
-
   const elmJsonFile = path.join(projectRoot, ELM_JSON);
-  const { version, dependencies } = await parseElmJson(elmJsonFile, test);
+
+  const { version, dependencies } = await parseElmJson(elmJsonFile);
+
+  const readmeFile = test
+    ? path.join(projectRoot, "..", "..", README_MD)
+    : path.join(projectRoot, README_MD);
+
+  const name = test
+    ? (await parseElmJson(path.join(projectRoot, "..", "..", ELM_JSON))).name
+    : undefined;
+
+  const transformations = await extractReadme(readmeFile, name);
+
   const directory = path.join(elmHome, version, "packages");
 
   for (const [dep, ver] of dependencies) {
@@ -437,7 +450,7 @@ async function extract(projectRoot: string, elmHome: string, test: boolean) {
   return transformations;
 }
 
-async function parseElmJson(filePath: string, test: boolean) {
+async function parseElmJson(filePath: string) {
   if (!await fs.exists(filePath)) {
     throw new ElmError(`Could not find '${ELM_JSON}' at ${filePath}`);
   }
@@ -447,8 +460,8 @@ async function parseElmJson(filePath: string, test: boolean) {
   type Dependencies = { direct: StringRecord; indirect: StringRecord };
 
   type ElmJson = {
+    ["name"]: string;
     dependencies: Dependencies;
-    ["test-dependencies"]: Dependencies;
     ["elm-version"]: string;
   };
 
@@ -460,14 +473,13 @@ async function parseElmJson(filePath: string, test: boolean) {
     throw new ElmError(`Undefined "elm-version" field in '${ELM_JSON}'`);
   }
 
-  const { direct, indirect } =
-    elmJson[test ? "test-dependencies" : "dependencies"] ?? {};
+  const { direct, indirect } = elmJson["dependencies"] ?? {};
 
   const dependencies = Object.entries(direct ?? {}).concat(
     Object.entries(indirect ?? {}),
   );
 
-  return { version, dependencies };
+  return { name: elmJson.name, version, dependencies };
 }
 
 async function extractDependency(
@@ -496,9 +508,10 @@ async function extractDependency(
   return await extractReadme(markdownFile);
 }
 
-async function extractReadme(filePath: string) {
+async function extractReadme(filePath: string, namespace?: string) {
   if (!await fs.exists(filePath)) return [];
 
+  const regExp = namespace ? getNamespace(namespace) : undefined;
   const content = await Deno.readTextFile(filePath);
 
   const transforms: Transform[] = [];
@@ -525,11 +538,16 @@ async function extractReadme(filePath: string) {
       if (token.lang !== "js") {
         throw new ElmError(`Unexpected '${token.lang}' code block`);
       }
+
+      const text = regExp
+        ? token.text.replaceAll(regExp, "$author$project$")
+        : token.text;
+
       if (find !== undefined) {
-        transforms.push({ find, replace: spacesToTabs(token.text, "    ") });
+        transforms.push({ find, replace: spacesToTabs(text, "    ") });
         find = undefined;
       } else {
-        find = spacesToTabs(token.text, "    ");
+        find = spacesToTabs(text, "    ");
       }
     }
   }

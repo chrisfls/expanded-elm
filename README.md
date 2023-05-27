@@ -77,7 +77,8 @@ The options available for `xelm make` include:
 - `--report=<report-type>`: You can say `--report=json` to get error messages
   as JSON. 
 - `--docs=<json-file>`: Generate a JSON file with the documentation.
-- `--test`: Load transformations from test dependencies.
+- `--test`: Enable test mode. Can be used with `elm-test-rs` with the
+  `--compiler` flag.
 
 ### Example
 
@@ -125,7 +126,7 @@ The `options` field provides various compiler options for the API.
 | `minify`          | Minify the output with terser.                                 |
 | `report`          | Change how error messages are reported.                        |
 | `docs`            | Generate a JSON file with the documentation.                   |
-| `test`            | Load transformations from test dependencies.                   |
+| `test`            | Enable test mode. Can be used with `elm-test-rs`.              |
 | `output`          | Controls how the logs from the compiler should be handled.     |
 
 #### transformations
