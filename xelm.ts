@@ -35,6 +35,10 @@ export interface Options {
   docs?: string;
   /** Load transformations from test dependencies. */
   test?: boolean;
+  /** Controls how `stdout` and `stderr` of the compiler should be handled.
+   * Defaults to "inherit". Set to "piped" to access the output programmatically.
+   */
+  output?: "inherit" | "piped" | "null";
 }
 
 /** Simple find-and-replace rules applied to the compiled code. */
@@ -66,6 +70,7 @@ export async function elm(inputs: string[], output: string, options?: Options) {
     report: options?.report,
     docs: options?.docs,
     test: options?.test ?? false,
+    output: options?.output,
   };
 
   if (!config.module && config.typescript) {
@@ -159,7 +164,7 @@ const ELM_STUFF = "elm-stuff";
 const ELM_HOME = Deno.env.get("ELM_HOME");
 const DEFAULT_ELM_HOME = ELM_HOME ?? `${Deno.env.get("HOME")}/.elm`;
 
-class ElmError extends Error {
+export class ElmError extends Error {
   constructor(message: string) {
     super(message);
   }
@@ -243,6 +248,7 @@ interface Flags {
   projectRoot?: string | undefined;
   elmHome?: string | undefined;
   elmPath?: string | undefined;
+  output?: "inherit" | "piped" | "null";
 }
 
 async function run(args: string[], flags?: Flags) {
@@ -250,6 +256,9 @@ async function run(args: string[], flags?: Flags) {
     args: [...args],
     cwd: flags?.projectRoot,
     env: flags?.elmHome ? { ELM_HOME: flags?.elmHome } : undefined,
+    stdin: "null",
+    stdout: flags?.output ?? "inherit",
+    stderr: flags?.output ?? "inherit",
   }).spawn().status;
 }
 

@@ -126,6 +126,7 @@ The `options` field provides various compiler options for the API.
 | `report`          | Change how error messages are reported.                        |
 | `docs`            | Generate a JSON file with the documentation.                   |
 | `test`            | Load transformations from test dependencies.                   |
+| `output`          | Controls how the logs from the compiler should be handled.     |
 
 #### transformations
 
