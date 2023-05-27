@@ -2,12 +2,13 @@
 
 A wrapper for the [Elm](https://elm-lang.org/) language
 [compiler](https://github.com/elm/compiler) that expands it with:
+
 - 🦕 [Deno](https://deno.land/) and [Node.js](https://nodejs.org/) support
-- 🏎️ [elm-optimize-level-2](https://github.com/mdgriffith/elm-optimize-level-2) 
-optimizations
+- 🏎️ [elm-optimize-level-2](https://github.com/mdgriffith/elm-optimize-level-2)
+  optimizations
 - 🗜️ [terser](https://terser.org/)
 - 🧪 find-and-replace rules for
-[dangerous experiments](https://discourse.elm-lang.org/t/native-code-in-0-19/826)
+  [dangerous experiments](https://discourse.elm-lang.org/t/native-code-in-0-19/826)
 
 ## Usage
 
@@ -57,8 +58,8 @@ The options available for `xelm make` include:
   `~/.elm` by default.
 - `--output=<module-name>.mjs`: Build an ECMAScript module.
   > **Warning**: If you intend to use certain libraries like
-  > [elm/http](https://package.elm-lang.org/packages/elm/http/latest/Http),
-  > you will need to utilize polyfills like:
+  > [elm/http](https://package.elm-lang.org/packages/elm/http/latest/Http), you
+  > will need to utilize polyfills like:
   > - [xhr](https://deno.land/x/xhr@0.3.0)
   > - [xhr-shim](https://github.com/apple502j/xhr-shim)
 - `--typescript=<runtime>`: Generate TypeScript bindings for the given runtime.
@@ -74,8 +75,8 @@ The options available for `xelm make` include:
   - `3` Same as running `elm-optimize-level-2 --optimize-speed`.
 - `--minify`: Minify the output with terser, loading configuration from
   `terser.config.json` if available.
-- `--report=<report-type>`: You can say `--report=json` to get error messages
-  as JSON. 
+- `--report=<report-type>`: You can say `--report=json` to get error messages as
+  JSON.
 - `--docs=<json-file>`: Generate a JSON file with the documentation.
 - `--test`: Enable test mode. Can be used with `elm-test-rs` with the
   `--compiler` flag.
@@ -86,13 +87,13 @@ The options available for `xelm make` include:
 ./xelm Main.elm -o output.js --optimize=2 --minify
 ```
 
-This example runs `elm` on the `Main.elm` file, optimizes the output with
-level 2 optimization, and minifies the resulting JavaScript code.
+This example runs `elm` on the `Main.elm` file, optimizes the output with level
+2 optimization, and minifies the resulting JavaScript code.
 
 ## API
 
-If you prefer a programmatic approach, you can import this tool as a library
-and incorporate it into your tooling.
+If you prefer a programmatic approach, you can import this tool as a library and
+incorporate it into your tooling.
 
 ### elm(inputs, output, options)
 
@@ -134,10 +135,10 @@ The `options` field provides various compiler options for the API.
 The `transformations` field of the options object is an array of simple
 find-and-replace rules applied to the compiled code.
 
-| Field    | Description      |
-| -------- | ---------------- |
-| `find`   | Code to find.    |
-| `replace`| Code to replace. |
+| Field     | Description      |
+| --------- | ---------------- |
+| `find`    | Code to find.    |
+| `replace` | Code to replace. |
 
 ### xelm(inputs, output, options)
 
@@ -164,17 +165,31 @@ Provide the same options as before, along with:
 | --------- | ------------------------------------------ |
 | `refresh` | Force refreshing the transformation cache. |
 
+### cli(args)
+
+```ts
+cli(args: string[] = Deno.args): Promise<Deno.CommandStatus>
+```
+
+Executes the command-line interface (CLI).
+
+| Parameter | Description                                   |
+| --------- | --------------------------------------------- |
+| `args`    | (Optional) An array of command-line arguments |
+
+**Returns:** The status returned from the compiler.
+
 ## Transformations
 
 Transformations are simple find-and-replace rules that are applied to the built
 code before doing any additional post-processing.
 
-The loader parses through the `README.md` files looking for a link to 
+The loader parses through the `README.md` files looking for a link to
 `#98f5c378-5809-4e35-904e-d1c5c3a8154e`.
 
-Then it starts matching pairs of JavaScript code blocks until it comes across
-an h1, h2, or h3 heading. An error is raised if an uneven amount of code-blocks
-is found.
+Then it starts matching pairs of JavaScript code blocks until it comes across an
+h1, h2, or h3 heading. An error is raised if an uneven amount of code-blocks is
+found.
 
 ### Example
 
@@ -185,7 +200,9 @@ requires [post-processing](#98f5c378-5809-4e35-904e-d1c5c3a8154e):
 
 ```js
 var $author$project$Server$Html$toJson = function (_v0) {
-  return $elm$json$Json$Encode$string('a7e4173c7ea41051bf56e286966e5acc195472204f0cf016ebbd94dde5f18ec7');
+  return $elm$json$Json$Encode$string(
+    "a7e4173c7ea41051bf56e286966e5acc195472204f0cf016ebbd94dde5f18ec7",
+  );
 };
 ```
 
@@ -262,25 +279,22 @@ you really need it.
 
 This is free and unencumbered software released into the public domain.
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+Anyone is free to copy, modify, publish, use, compile, sell, or distribute this
+software, either in source code form or as a compiled binary, for any purpose,
+commercial or non-commercial, and by any means.
 
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
+In jurisdictions that recognize copyright laws, the author or authors of this
+software dedicate any and all copyright interest in the software to the public
+domain. We make this dedication for the benefit of the public at large and to
+the detriment of our heirs and successors. We intend this dedication to be an
+overt act of relinquishment in perpetuity of all present and future rights to
+this software under copyright law.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to &lt;<http://unlicense.org/>&gt;

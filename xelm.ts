@@ -155,6 +155,30 @@ export async function xelm(
   });
 }
 
+/**
+ * Executes the command-line interface (CLI).
+ * @param args - An array of command-line arguments.
+ * @returns The status returned from the compiler.
+ */
+export async function cli(args = Deno.args) {
+  if (args[0] !== "make") return await run(args);
+
+  const { inputs, output, options, transform } = await parseCliArgs(args);
+
+  try {
+    return transform
+      ? xelm(inputs, output, options)
+      : elm(inputs, output, options);
+  } catch (e) {
+    if (e instanceof ElmError) {
+      console.error(e.message);
+      Deno.exit(1);
+    }
+
+    throw e;
+  }
+}
+
 // INTERNALS
 
 const TERSER_CONFIG_JSON = "terser.config.json";
@@ -172,11 +196,7 @@ export class ElmError extends Error {
 
 // CLI
 
-// TODO: document these
-
-export async function cli(args: string[]) {
-  if (args[0] !== "make") return await run(args);
-
+async function parseCliArgs(args: string[]) {
   const parsed = parse(args.slice(1, args.length), {
     string: [
       "output",
@@ -202,7 +222,10 @@ export async function cli(args: string[]) {
     elmHome: parsed["elm-home"],
   };
 
-  if (parsed.help) return await help(flags);
+  if (parsed.help) {
+    await help(flags);
+    Deno.exit(0);
+  }
 
   assertOutput(parsed.output);
   assertOptimize(parsed.optimize);
@@ -212,9 +235,9 @@ export async function cli(args: string[]) {
 
   const options: ExtraOptions = {
     ...flags,
-    typescript: typeof parsed?.typescript === "boolean"
-      ? (parsed?.typescript ? "deno" : undefined)
-      : (parsed?.typescript ?? undefined),
+    typescript: typeof parsed.typescript === "boolean"
+      ? (parsed.typescript ? "deno" : undefined)
+      : (parsed.typescript ?? undefined),
     debug: parsed.debug,
     optimize: parsed.optimize,
     minify: parsed.minify
@@ -226,25 +249,15 @@ export async function cli(args: string[]) {
     refresh: parsed.refresh,
   };
 
-  return parsed.transform
-    ? xelm(inputs, parsed.output, options)
-    : elm(inputs, parsed.output, options);
+  return {
+    inputs,
+    output: parsed.output,
+    options,
+    transform: parsed.transform,
+  };
 }
 
-export async function runCli(args = Deno.args) {
-  try {
-    await cli(args);
-  } catch (e) {
-    if (e instanceof ElmError) {
-      console.error(e.message);
-      Deno.exit(1);
-    }
-
-    throw e;
-  }
-}
-
-if (import.meta.main) await runCli();
+if (import.meta.main) await cli();
 
 // ELM
 
