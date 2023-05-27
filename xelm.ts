@@ -69,7 +69,7 @@ export async function elm(inputs: string[], output: string, options?: Options) {
   };
 
   if (!config.module && config.typescript) {
-    exit(
+    throw new ElmError(
       "Generating TypeScript bindings require building an ECMAScript module.",
     );
   }
@@ -159,9 +159,15 @@ const ELM_STUFF = "elm-stuff";
 const ELM_HOME = Deno.env.get("ELM_HOME");
 const DEFAULT_ELM_HOME = ELM_HOME ?? `${Deno.env.get("HOME")}/.elm`;
 
+class ElmError extends Error {
+  constructor(message: string) {
+    super(message);
+  }
+}
+
 // CLI
 
-async function cli(args: string[]) {
+export async function cli(args: string[]) {
   if (args[0] !== "make") return await run(args);
 
   const parsed = parse(args.slice(1, args.length), {
@@ -218,7 +224,18 @@ async function cli(args: string[]) {
     : elm(inputs, parsed.output, options);
 }
 
-if (import.meta.main) await cli(Deno.args);
+if (import.meta.main) {
+  try {
+    await cli(Deno.args);
+  } catch (e) {
+    if (e instanceof ElmError) {
+      console.error(e.message);
+      Deno.exit(1);
+    }
+
+    throw e;
+  }
+}
 
 // ELM
 
@@ -407,7 +424,7 @@ async function extract(projectRoot: string, elmHome: string, test: boolean) {
 
 async function parseElmJson(filePath: string, test: boolean) {
   if (!await fs.exists(filePath)) {
-    exit(`Could not find '${ELM_JSON}' at ${filePath}`);
+    throw new ElmError(`Could not find '${ELM_JSON}' at ${filePath}`);
   }
 
   type StringRecord = Record<string, string>;
@@ -425,7 +442,7 @@ async function parseElmJson(filePath: string, test: boolean) {
   const version = elmJson["elm-version"];
 
   if (version === undefined) {
-    exit(`Undefined "elm-version" field in '${ELM_JSON}'`);
+    throw new ElmError(`Undefined "elm-version" field in '${ELM_JSON}'`);
   }
 
   const { direct, indirect } =
@@ -490,7 +507,9 @@ async function extractReadme(filePath: string) {
     }
 
     if (collect && token.type === "code") {
-      if (token.lang !== "js") exit(`Unexpected '${token.lang}' code block`);
+      if (token.lang !== "js") {
+        throw new ElmError(`Unexpected '${token.lang}' code block`);
+      }
       if (find !== undefined) {
         transforms.push({ find, replace: spacesToTabs(token.text, "    ") });
         find = undefined;
@@ -501,7 +520,9 @@ async function extractReadme(filePath: string) {
   }
 
   if (find !== undefined) {
-    exit(`Unmatched find-and-replace transformation pattern:\n\n${find}`);
+    throw new ElmError(
+      `Unmatched find-and-replace transformation pattern:\n\n${find}`,
+    );
   }
 
   return transforms;
@@ -604,9 +625,9 @@ async function help(flags: Flags) {
 function assertOutput(
   output: unknown,
 ): asserts output is string {
-  if (typeof output !== "string") exit("No output file");
+  if (typeof output !== "string") throw new ElmError("No output file");
   if (![".js", ".mjs"].includes(path.extname(output))) {
-    exit("Output must be JavaScript or ECMAScript module");
+    throw new ElmError("Output must be JavaScript or ECMAScript module");
   }
 }
 
@@ -615,7 +636,7 @@ function assertOptimize(
 ): asserts optimize is Options["optimize"] {
   if (optimize === undefined || typeof optimize === "boolean") return;
   if (typeof optimize === "number" && (optimize < 0 || optimize > 3)) {
-    exit(`Invalid optimization level ${optimize}`);
+    throw new ElmError(`Invalid optimization level ${optimize}`);
   }
 }
 
@@ -624,7 +645,7 @@ function assertTypescript(
 ): asserts typescript is Options["typescript"] {
   if (typescript === undefined || typeof typescript === "boolean") return;
   if (typescript !== "deno" && typescript !== "node") {
-    exit(`Invalid TypeScript format ${typescript}`);
+    throw new ElmError(`Invalid TypeScript format ${typescript}`);
   }
 }
 
@@ -636,17 +657,8 @@ async function getMinifyOptions(projectRoot?: string) {
   try {
     return JSON.parse(await Deno.readTextFile(terserFile));
   } catch (e) {
-    exit(`Could not parse \`${TERSER_CONFIG_JSON}\`: ${e.message}`);
+    throw new ElmError(
+      `Could not parse \`${TERSER_CONFIG_JSON}\`: ${e.message}`,
+    );
   }
-}
-
-// UTIL
-
-function exit(message: string): never {
-  if (import.meta.main) {
-    console.error(message);
-    Deno.exit(1);
-  }
-
-  throw new Error(message);
 }
