@@ -364,7 +364,7 @@ function preprocess(content: string, config: PostConfig) {
     }
 
     for (const { flag, cond } of stack) {
-      if (cond === (config[flag] ?? false)) continue lines;
+      if (cond !== (config[flag] ?? false)) continue lines;
     }
 
     lines.push(
