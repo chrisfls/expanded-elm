@@ -306,13 +306,17 @@ function transform(content: string, config: PostConfig) {
   for (const { find, replace } of config.transformations) {
     const fmt = spacesToTabs(find);
     map[fmt] = preprocess(spacesToTabs(replace), config);
-    const txt = fmt.replace(/[.*+?^${}()|[\]\\\/]/g, "\\$&");
+    const txt = escapeRegExp(fmt);
     patterns.push(txt);
   }
 
   const regexp = new RegExp(`(${patterns.join("|")})`, "gm");
 
   return content.replaceAll(regexp, (substring) => map[substring] ?? substring);
+}
+
+function escapeRegExp(text: string) {
+  return text.replace(/[.*+?^${}()|[\]\\\/]/g, "\\$&");
 }
 
 function spacesToTabs(content: string, spaces = "  ") {
