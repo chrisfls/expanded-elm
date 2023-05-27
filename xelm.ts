@@ -341,26 +341,31 @@ function spacesToTabs(content: string, spaces = "  ") {
 function preprocess(content: string, config: PostConfig) {
   const lines: string[] = [];
 
-  const check = ["debug", "test", "module"] as const;
+  const vars = ["debug", "test"] as const;
 
-  type Flags = typeof check[number];
-  const stack: Flags[] = [];
+  type Flags = typeof vars[number];
+  const stack: { flag: Flags; cond: boolean }[] = [];
 
   lines:
   for (const line of content.split("\n")) {
     const [comment, cond, flag] = line.trim().split(/\s+/);
 
     if (comment === "//") {
-      if (cond === "@IF" && check.includes(flag as Flags)) {
-        stack.push(flag as Flags);
+      if (cond === "@IF" && vars.includes(flag as Flags)) {
+        stack.push({ flag: flag as Flags, cond: true });
         continue lines;
-      } else if (cond === "@FI") {
+      } else if (cond === "@UNLESS" && vars.includes(flag as Flags)) {
+        stack.push({ flag: flag as Flags, cond: false });
+        continue lines;
+      } else if (cond === "@END") {
         stack.pop();
         continue lines;
       }
     }
 
-    for (const flag of stack) if (!config[flag]) continue lines;
+    for (const { flag, cond } of stack) {
+      if (cond === (config[flag] ?? false)) continue lines;
+    }
 
     lines.push(
       stack.length === 0 ? line : line.replace("\t".repeat(stack.length), ""),

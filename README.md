@@ -184,14 +184,73 @@ Executes the command-line interface (CLI).
 Transformations are simple find-and-replace rules that are applied to the built
 code before doing any additional post-processing.
 
-The loader parses through the `README.md` files looking for a link to
-`#98f5c378-5809-4e35-904e-d1c5c3a8154e`.
+The loader scans the main `README.md` file of the project, as well as the
+dependencies of the project, searching for a link to
+`#98f5c378-5809-4e35-904e-d1c5c3a8154e`. Afterwards, it matches pairs of
+JavaScript code blocks until it comes across an h1, h2, or h3 heading. If a
+non-JavaScript code block or an odd number of code blocks is found, an error is
+raised.
 
-Then it starts matching pairs of JavaScript code blocks until it comes across an
-h1, h2, or h3 heading. An error is raised if an uneven amount of code-blocks is
-found.
+### Preprocessor
 
-### Example
+The preprocessor is a small
+[DSL](https://en.wikipedia.org/wiki/Domain-specific_language) included to enable
+testing and optimization of code transforms. It provides a simple syntax with
+two condition constructs and two variables.
+
+#### Variables
+
+The preprocessor supports the following variables:
+
+- `debug`: Represents the debug flag.
+- `test`: Represents the test flag.
+
+#### Coditions
+
+The preprocessor offers two condition constructs:
+
+##### @IF
+
+```js
+// @IF debug
+console.log("This code is included when the debug flag is set");
+// @END
+```
+
+##### @UNLESS
+
+```js
+// @UNLESS test
+console.log("This code is included when the test flag is not set");
+// @END
+```
+
+#### Composition
+
+You can combine multiple condition constructs and variables to create composed
+conditional logic. Here's an example:
+
+```js
+// @IF debug
+//   @IF test
+console.log("This code is included when both debug and test flags are set");
+//   @END
+// @END
+```
+
+In the above example, the inner `@IF` construct is only evaluated if the `debug`
+flag is set. If both the `debug` and `test` flags are set, the code within the
+inner construct will be included.
+
+By leveraging the preprocessor, you can selectively include or exclude code
+based on the specified conditions, allowing for efficient testing and
+optimization of your transforms.
+
+Please note that the preprocessor has a limited syntax and supports only the
+`debug` and `test` variables. It does not provide support for additional custom
+variables or complex conditional logic.
+
+### Example transform
 
 This section could be included in the `README.md` file of a library that
 requires [post-processing](#98f5c378-5809-4e35-904e-d1c5c3a8154e):
