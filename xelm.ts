@@ -543,6 +543,32 @@ async function extractReadme(filePath: string) {
   return transforms;
 }
 
+function getNamespace(name: string) {
+  const [author, project] = escapeVar(name).split("/");
+
+  if (author === undefined) {
+    throw new ElmError(`Could not extract author name from ${ELM_JSON}`);
+  }
+
+  if (project === undefined) {
+    throw new ElmError(`Could not extract project name from ${ELM_JSON}`);
+  }
+
+  const authorPart = escapeRegExp(escapeVar(author));
+
+  const projectPart = escapeRegExp(escapeVar(project));
+
+  return new RegExp(
+    `\\\$${authorPart}\\\$${projectPart}\\\$`,
+    "gm",
+  );
+}
+
+function escapeVar(name: string) {
+  // TODO: proper escape
+  return name.replace(/\-/gm, "_");
+}
+
 // CACHE
 
 async function needsCacheRefresh(
