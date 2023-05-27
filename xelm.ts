@@ -229,9 +229,9 @@ export async function cli(args: string[]) {
     : elm(inputs, parsed.output, options);
 }
 
-if (import.meta.main) {
+export async function runCli(args = Deno.args) {
   try {
-    await cli(Deno.args);
+    await cli(args);
   } catch (e) {
     if (e instanceof ElmError) {
       console.error(e.message);
@@ -241,6 +241,8 @@ if (import.meta.main) {
     throw e;
   }
 }
+
+if (import.meta.main) await runCli();
 
 // ELM
 
