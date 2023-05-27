@@ -58,7 +58,9 @@ The options available for `xelm make` include:
 - `--output=<module-name>.mjs`: Build an ECMAScript module.
   > **Warning**: If you intend to use certain libraries like
   > [elm/http](https://package.elm-lang.org/packages/elm/http/latest/Http),
-  > you will need to utilize [polyfills](https://github.com/apple502j/xhr-shim).
+  > you will need to utilize polyfills like:
+  > - [xhr](https://deno.land/x/xhr@0.3.0)
+  > - [xhr-shim](https://github.com/apple502j/xhr-shim)
 - `--typescript=<runtime>`: Generate TypeScript bindings for the given runtime.
   For example, `--typescript=node` generates bindings for node. Defaults to
   `deno` and requires a `.mjs` output.
