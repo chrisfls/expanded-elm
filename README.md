@@ -250,86 +250,18 @@ Please note that the preprocessor has a limited syntax and supports only the
 `debug` and `test` variables. It does not provide support for additional custom
 variables or complex conditional logic.
 
-### Example transform
+### Examples
 
-This section could be included in the `README.md` file of a library that
-requires [post-processing](#98f5c378-5809-4e35-904e-d1c5c3a8154e):
+One example of a library that requires post-processing is
+[kress95/elm-html-convert](https://github.com/kress95/elm-html-convert). This
+library provides a transform in its `README.md` file. The unit tests included
+in the repository also rely on applying this transform.
 
-#### where:
-
-```js
-var $author$project$Server$Html$toJson = function (_v0) {
-  return $elm$json$Json$Encode$string(
-    "a7e4173c7ea41051bf56e286966e5acc195472204f0cf016ebbd94dde5f18ec7",
-  );
-};
-```
-
-#### replace with:
-
-```js
-var virtualDomKernelConstants = {
-  nodeTypeTagger: 4,
-  nodeTypeThunk: 5,
-  kids: "e",
-  refs: "l",
-  thunk: "m",
-  node: "k",
-  value: "a",
-};
-
-function forceThunks(vNode) {
-  if (typeof vNode !== "undefined" && vNode.$ === "#2") {
-    vNode.b = forceThunks(vNode.b);
-  }
-  if (
-    typeof vNode !== "undefined" &&
-    vNode.$ === virtualDomKernelConstants.nodeTypeThunk &&
-    !vNode[virtualDomKernelConstants.node]
-  ) {
-    var args = vNode[virtualDomKernelConstants.thunk];
-    vNode[virtualDomKernelConstants.node] =
-      vNode[virtualDomKernelConstants.thunk].apply(args);
-    vNode[virtualDomKernelConstants.node] = forceThunks(
-      vNode[virtualDomKernelConstants.node],
-    );
-  }
-  if (
-    typeof vNode !== "undefined" &&
-    vNode.$ === virtualDomKernelConstants.nodeTypeTagger
-  ) {
-    vNode[virtualDomKernelConstants.node] = forceThunks(
-      vNode[virtualDomKernelConstants.node],
-    );
-  }
-  if (
-    typeof vNode !== "undefined" &&
-    typeof vNode[virtualDomKernelConstants.kids] !== "undefined"
-  ) {
-    vNode[virtualDomKernelConstants.kids] =
-      vNode[virtualDomKernelConstants.kids].map(forceThunks);
-  }
-  return vNode;
-}
-
-function _HtmlAsJson_toJson(html) {
-  return _Json_wrap(forceThunks(html));
-}
-
-function _HtmlAsJson_eventHandler(event) {
-  return event[virtualDomKernelConstants.value];
-}
-
-function _HtmlAsJson_taggerFunction(tagger) {
-  return tagger.a;
-}
-
-function _HtmlAsJson_attributeToJson(attribute) {
-  return _Json_wrap(attribute);
-}
-
-var $author$project$Server$Html$toJson = _HtmlAsJson_toJson;
-```
+In the context of an application, my
+[elm-ssr-demo](https://github.com/kress95/elm-ssr-demo) application is using
+[kress95/elm-html-convert](https://github.com/kress95/elm-html-convert) and,
+consequently, requires applying transformations to work. Although in this
+particular application `xelm.ts` is used programmatically.
 
 This feature can easily break Elm safety guarantees, so avoid using it unless
 you really need it.
