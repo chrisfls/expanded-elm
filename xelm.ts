@@ -384,13 +384,11 @@ function modularize(content: string) {
 }
 
 async function typescript(dest: string, runtime: "deno" | "node") {
-  const name = path.join(dest.slice(0, -path.extname(dest).length));
-  const deno = runtime === "deno";
-  const prefix = name.at(0) === "/" ? "" : "./";
+  const { dir, name } = path.parse(dest);
   await Deno.writeTextFile(
-    `${name}.ts`,
+    path.join(dir, `${name}.ts`),
     `/// <reference lib="dom" />
-import elm from "${prefix}${name}${deno ? ".mjs" : ""}";
+import elm from "./${name}${runtime === "deno" ? ".mjs" : ""}";
 interface Elm {
   [module: Capitalize<string>]: Elm | undefined;
   init?: (options?: { node?: Node; flags?: unknown }) => {
