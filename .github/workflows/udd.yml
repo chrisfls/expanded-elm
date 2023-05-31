@@ -20,11 +20,11 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         id: pr
         with:
-          commit-message: "Update dependencies"
+          commit-message: "update deps"
           title: Update dependencies
           body: >
             Dependencies updated by [udd](https://github.com/hayd/deno-udd).
-          branch: deno-dependency-updates
+          branch: update-deps
           author: GitHub <noreply@github.com>
           delete-branch: true
       - name: Retrieve commit sha
