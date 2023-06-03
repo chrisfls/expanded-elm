@@ -392,7 +392,7 @@ import elm from "./${name}${runtime === "deno" ? ".mjs" : ""}";
 interface Elm {
   [module: Capitalize<string>]: Elm | undefined;
   init?: (options?: { node?: Node; flags?: unknown }) => {
-    ports: {
+    ports?: {
       [port: string]:
         | { send(value: unknown): void }
         | {
