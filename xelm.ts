@@ -1,11 +1,11 @@
 #!/usr/bin/env -S deno run -A
-import { cyan as colorize } from "https://deno.land/std@0.203.0/fmt/colors.ts";
-import { parse } from "https://deno.land/std@0.203.0/flags/mod.ts";
-import * as fs from "https://deno.land/std@0.203.0/fs/mod.ts";
-import * as path from "https://deno.land/std@0.203.0/path/mod.ts";
-import { marked } from "https://esm.sh/marked@9.1.0/";
-import { minify, MinifyOptions } from "https://esm.sh/terser@5.21.0/";
-import "npm:typescript@5.3.0-dev.20231005";
+import { cyan as colorize } from "https://deno.land/std@0.220.1/fmt/colors.ts";
+import { parse } from "https://deno.land/std@0.220.1/flags/mod.ts";
+import * as fs from "https://deno.land/std@0.220.1/fs/mod.ts";
+import * as path from "https://deno.land/std@0.220.1/path/mod.ts";
+import { marked } from "https://esm.sh/marked@12.0.1/";
+import { minify, MinifyOptions } from "https://esm.sh/terser@5.29.2/";
+import "npm:typescript@5.5.0-dev.20240326";
 import { transform as optimize } from "npm:elm-optimize-level-2@0.3.5";
 
 /** Compiler options. */
